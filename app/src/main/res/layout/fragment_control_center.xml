@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black_overlay"
+    tools:layout_editor_absoluteX="-20dp"
+    tools:layout_editor_absoluteY="0dp">
+
+
+    <androidx.gridlayout.widget.GridLayout
+        android:id="@+id/gridLayout2"
+        android:layout_width="300dp"
+        android:layout_height="84dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.55"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints">
+
+        <ImageView
+            android:id="@+id/wlanBtn"
+            android:layout_width="140dp"
+            android:layout_height="80dp"
+            android:background="@drawable/circle_bg"
+            app:layout_column="0"
+            app:layout_row="0"
+            app:srcCompat="@drawable/ic_wifi" />
+
+        <View
+            android:id="@+id/view5"
+            android:layout_width="20dp"
+            android:layout_height="60dp"
+            app:layout_column="1"
+            app:layout_row="0" />
+
+        <ImageView
+            android:id="@+id/BtBtn"
+            android:layout_width="140dp"
+            android:layout_height="80dp"
+            android:background="@drawable/circle_bg"
+            app:layout_column="2"
+            app:layout_row="0"
+            app:srcCompat="@drawable/ic_bt" />
+
+    </androidx.gridlayout.widget.GridLayout>
+
+    <androidx.gridlayout.widget.GridLayout
+        android:id="@+id/gridLayout"
+        android:layout_width="300dp"
+        android:layout_height="84dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/gridLayout2">
+
+        <ImageView
+            android:id="@+id/settingsBtn"
+            android:layout_width="140dp"
+            android:layout_height="80dp"
+            android:background="@drawable/circle_bg"
+            app:layout_column="0"
+            app:layout_row="0"
+            app:srcCompat="@drawable/icon_settings" />
+
+        <View
+            android:id="@+id/view8"
+            android:layout_width="20dp"
+            android:layout_height="69dp" />
+
+        <ImageView
+            android:id="@+id/volumeBtn"
+            android:layout_width="140dp"
+            android:layout_height="80dp"
+            android:background="@drawable/circle_bg"
+            app:layout_column="2"
+            app:layout_row="0"
+            app:srcCompat="@drawable/volume" />
+    </androidx.gridlayout.widget.GridLayout>
+
+    <androidx.gridlayout.widget.GridLayout
+        android:layout_width="300dp"
+        android:layout_height="84dp"
+
+        android:layout_marginTop="84dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/gridLayout">
+
+        <ImageView
+            android:id="@+id/brightnessBtn"
+            android:layout_width="140dp"
+            android:layout_height="80dp"
+            android:background="@drawable/circle_bg"
+            app:layout_column="2"
+            app:layout_row="0"
+            app:srcCompat="@drawable/ic_brightness" />
+
+        <View
+            android:id="@+id/view2"
+            android:layout_width="20dp"
+            android:layout_height="69dp"
+            app:layout_column="1"
+            app:layout_row="0" />
+
+        <ImageView
+            android:id="@+id/data"
+            android:layout_width="140dp"
+            android:layout_height="80dp"
+            android:background="@drawable/circle_bg"
+            app:layout_column="0"
+            app:layout_row="0"
+            app:srcCompat="@drawable/ic_data" />
+    </androidx.gridlayout.widget.GridLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

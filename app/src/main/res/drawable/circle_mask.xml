@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:shape="rectangle"
+    tools:ignore="ExtraText">
+
+    <!-- 使用渐变替代纯色 -->
+    <gradient
+        android:startColor="#646464"
+        android:endColor="#909090"
+        android:angle="135"
+        android:type="linear" /><!-- 结束颜色 -->
+    <!-- 起始颜色 -->
+    <!-- 线性渐变 -->
+
+    <corners
+        android:radius="50dp"/>
+</shape>

@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Time Launcher</string>
+    <string name="devloper_name1">EXEFUER</string>
+    <string name="devloper_name2">dudu</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="todo">TODO</string>
+</resources>

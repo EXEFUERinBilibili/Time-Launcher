@@ -1,0 +1,20 @@
+<resources>
+
+    <style name="AppTheme.NoStatusBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:background">@color/black_overlay</item>
+        <item name="android:buttonBarStyle">?android:attr/buttonBarStyle</item>
+    </style>
+
+    <!-- Android 4.1 Jelly Bean 风格的 SeekBar -->
+    <style name="SeekBarStyle.Android16" parent="Widget.AppCompat.SeekBar">
+        <item name="android:progressDrawable">@drawable/seekbar_progress_android16</item>
+        <item name="android:thumb">@drawable/circle_bg</item>
+        <item name="android:splitTrack">false</item>
+        <item name="android:minHeight">90dp</item>
+        <item name="android:maxHeight">90dp</item>
+    </style>
+
+</resources>
+

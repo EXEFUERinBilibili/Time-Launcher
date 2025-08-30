@@ -1,0 +1,220 @@
+package com.exefuer.timelauncher2;
+
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.media.AudioManager;
+import android.os.BatteryManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.viewpager.widget.ViewPager;
+import com.blankj.utilcode.util.PhoneUtils;
+import com.blankj.utilcode.util.VolumeUtils;
+import com.dudu.wearlauncher.utils.ILog;
+import com.exefuer.timelauncher2.R;
+import org.json.JSONArray;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+public class WatchFaceFragment extends Fragment{
+    WatchFaceBridge watchFace;
+    View watchFaceView;
+    MyFrameLayout watchFaceBox;
+    FrameLayout.LayoutParams layoutParams;
+
+    BroadcastReceiver watchFaceChangeReceiver, batteryChangeReceiver, timeChangeReceiver, screenStatusChangeReceiver;
+    
+    
+    
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_watchface, container, false);
+    }
+
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        
+        watchFaceBox = view.findViewById(R.id.watchface_box);
+
+        screenStatusChangeReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                try {
+                    switch (intent.getAction()) {
+                        case Intent.ACTION_USER_PRESENT:
+                            watchFace.onScreenStateChanged(true);
+                            break;
+                        case Intent.ACTION_SCREEN_OFF:
+                            watchFace.onScreenStateChanged(false);
+                            break;
+                        case Intent.ACTION_SCREEN_ON:
+                            watchFace.onScreenStateChanged(true);
+                            break;
+                    }
+                	
+                } catch(Exception err) {
+                	
+                }
+            }
+        };
+        IntentFilter screenStatusChangeFilter = new IntentFilter();
+        screenStatusChangeFilter.addAction(Intent.ACTION_SCREEN_ON);
+        screenStatusChangeFilter.addAction(Intent.ACTION_USER_PRESENT);
+        screenStatusChangeFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        requireActivity().registerReceiver(screenStatusChangeReceiver, screenStatusChangeFilter);
+
+        
+       
+        refreshWatchFace();
+        
+        watchFaceChangeReceiver = new BroadcastReceiver(){
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                refreshWatchFace();
+            }
+        };
+        IntentFilter watchFaceChangeFilter = new IntentFilter("com.dudu.wearlauncher.WatchFaceChange");
+        requireActivity().registerReceiver(watchFaceChangeReceiver,watchFaceChangeFilter);
+        batteryChangeReceiver = new BroadcastReceiver(){
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+                int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_UNKNOWN);
+                int battery = level * 100 / scale;
+                updateBattery(battery,status);
+            }
+        };
+        requireActivity().registerReceiver(batteryChangeReceiver,new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        timeChangeReceiver = new BroadcastReceiver(){
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                updateTime();
+            }
+        };
+        IntentFilter timeChangeFilter = new IntentFilter();
+        timeChangeFilter.addAction(Intent.ACTION_TIME_TICK);
+        timeChangeFilter.addAction(Intent.ACTION_TIME_CHANGED);
+        requireActivity().registerReceiver(timeChangeReceiver,timeChangeFilter);
+        watchFaceBox.setLongClickListener(() -> {
+            Intent intent = new Intent(requireActivity(), ChooseWatchFaceActivity.class);
+            startActivity(intent);
+            requireActivity().overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        });
+    }
+    private void refreshWatchFace() {
+    	watchFaceBox.removeAllViews();
+        try {
+            if(SharedPreferencesUtil.getData(SharedPreferencesUtil.NOW_WATCHFACE,"").equals("")) {
+            	onNoWatchFace();
+            }else{
+                WatchFaceInfo wfInfo = WatchFaceHelper.getWatchfaceByPackage((String)SharedPreferencesUtil.getData(SharedPreferencesUtil.NOW_WATCHFACE,""));
+                watchFaceView = WatchFaceHelper.loadWatchface(requireActivity(),wfInfo.packageName, wfInfo.watchface);
+                watchFace = new WatchFaceBridge(watchFaceView);
+                if(watchFace != null) {
+                    layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,FrameLayout.LayoutParams.MATCH_PARENT);
+                    watchFaceBox.addView(watchFaceView,layoutParams);
+                    updateTime();
+                    BatteryManager batteryManager = (BatteryManager)requireActivity().getSystemService(Context.BATTERY_SERVICE);
+                    if(Build.VERSION.SDK_INT<Build.VERSION_CODES.O) {
+                        updateBattery(batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY),BatteryManager.BATTERY_STATUS_DISCHARGING);
+                    }else{
+                        updateBattery(batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY),batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS));
+                    }
+                
+                }else{
+                    throw new RuntimeException("Unexpected null watchface");
+                }
+            }
+        } catch (Exception err) {
+            /*StackTraceElement[] elements = err.getStackTrace();
+            StringBuilder sb = new StringBuilder();
+            for(StackTraceElement element : elements) {
+                sb.append(element);
+                sb.append("\n");
+            }
+
+            Intent intent = new Intent(requireActivity(), CatchActivity.class);
+            intent.putExtra("stack", sb.toString());
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); //这句是安卓4必须有的
+            requireActivity().startActivity(intent);*/
+            onWatchFaceLoadFailed();
+            ILog.e("表盘加载失败:" + err);
+            err.printStackTrace();
+            ILog.writeThrowableToFile(err, new File(requireActivity().getExternalCacheDir(), SharedPreferencesUtil.getData(SharedPreferencesUtil.NOW_WATCHFACE, "") + "-" + System.currentTimeMillis() + ".log"));
+            //FileIOUtils.writeFileFromString(watchFaceFolder + "/" + System.currentTimeMillis() + "watchface.log", err.toString());
+        }
+       
+    }
+
+    private void onWatchFaceLoadFailed() {
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.gravity = Gravity.CENTER;
+        TextView tv = new TextView(requireActivity());
+        tv.setText("表盘加载失败");
+        watchFaceBox.addView(tv, lp);
+    }
+    
+    private void onNoWatchFace() {
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.gravity = Gravity.CENTER;
+        TextView tv = new TextView(requireActivity());
+        tv.setGravity(Gravity.CENTER);
+        tv.setText("还没有表盘哦\n快长按这里添加吧");
+        watchFaceBox.addView(tv, lp);
+    }
+
+    public WatchFaceBridge getWatchFace() {
+        return this.watchFace;
+    }
+
+    @Override
+    public void onDestroy() {
+    	super.onDestroy();
+        requireActivity().unregisterReceiver(watchFaceChangeReceiver);
+        requireActivity().unregisterReceiver(batteryChangeReceiver);
+        requireActivity().unregisterReceiver(timeChangeReceiver);
+        requireActivity().unregisterReceiver(screenStatusChangeReceiver);
+    }
+    public void updateTime(){
+        if(watchFace!=null) {
+            try {
+                watchFace.updateTime();
+            } catch(Exception err) {
+            	
+            }
+            //watchFaceView.updateViewLayout(watchFace, watchFaceParams);    //时间更新
+        }
+    }
+
+    public void updateBattery(int i,int batteryStatus){
+        if(watchFace!=null) {
+            try {
+                watchFace.updateBattery(i,batteryStatus);
+            } catch(Exception err) {
+            	err.printStackTrace();
+            }
+            //lwatchFaceBox.updateViewLayout(watchFace,layoutParams);    //电池更新
+        }
+    }
+}
